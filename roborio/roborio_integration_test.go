@@ -8,7 +8,7 @@ import (
 func TestRoborio(t *testing.T) {
 	dr := newDockerRio(t)
 	defer dr.shutdown()
-	rio, err := NewRoborio("test", "test", Addresses("localhost"), Team(973))
+	rio, err := NewRoborio("test", "test", Addresses("localhost"), Team(973), Port(8080))
 	if err != nil {
 		t.Fatal(err)
 	}

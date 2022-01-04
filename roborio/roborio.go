@@ -16,6 +16,7 @@ type Roborio struct {
 	team     int
 	addrs    []string
 	currAddr int
+	port     int
 }
 
 type Option func(*Roborio)
@@ -32,8 +33,14 @@ func Team(team int) Option {
 	}
 }
 
+func Port(port int) Option {
+	return func(r *Roborio) {
+		r.port = port
+	}
+}
+
 func NewRoborio(user, pass string, options ...Option) (*Roborio, error) {
-	rio := &Roborio{}
+	rio := &Roborio{port: 22}
 
 	config := &ssh.ClientConfig{
 		User: user,
@@ -71,7 +78,7 @@ func (r *Roborio) Connect() error {
 	if r.currAddr > len(r.addrs) {
 		return ErrorNoConnection
 	}
-	client, err := ssh.Dial("tcp", r.addrs[r.currAddr]+":22", r.config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", r.addrs[r.currAddr], r.port), r.config)
 	if err != nil {
 		r.currAddr++
 		return fmt.Errorf("unable to connect to roborio at address %s %w", r.addrs[r.currAddr-1], err)
