@@ -13,9 +13,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Fix Permissions on Home Directory
-      run: chmod og-rw ~
-
     - name: Setup SSH Config
       run: |
         cat > sshd_config <<EOF
@@ -39,6 +36,13 @@ jobs:
     - name: Add key to auth file
       run: >
         cat ~/.ssh/id_rsa.pub | tee -a ~/.ssh/authorized_keys
+    
+    - name: Ensure the owner of the key is correct
+      run: |
+        chmod 600 ~/.ssh/authorized_keys
+        chmod 700 ~/.ssh
+        sudo chmod -c 0755 ~/
+        ls -la ~/.ssh
 
     - name: Set up Go
       uses: actions/setup-go@v2
