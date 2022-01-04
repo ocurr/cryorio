@@ -16,6 +16,30 @@ jobs:
     - name: Fix Permissions on Home Directory
       run: chmod og-rw ~
 
+    - name: Setup SSH Config
+      run: |
+        cat > sshd_config <<EOF
+          SyslogFacility AUTHPRIV
+          PermitRootLogin yes
+          AuthorizedKeysFile	.ssh/authorized_keys
+          PasswordAuthentication yes
+          ChallengeResponseAuthentication no
+          UsePAM yes
+          UseDNS no
+          X11Forwarding no
+          PrintMotd no
+        EOF
+        sudo mv sshd_config /etc/ssh/sshd_config
+        sudo systemctl restart ssh
+
+    - name: Create SSH Key
+      run: >
+        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa
+
+    - name: Add key to auth file
+      run: >
+        cat ~/.ssh/id_rsa.pub | tee -a ~/.ssh/authorized_keys
+
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
