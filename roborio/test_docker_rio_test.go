@@ -35,10 +35,10 @@ func newDockerRio(t *testing.T) *dockerRio {
 
 	hostConfig := &container.HostConfig{
 		PortBindings: nat.PortMap{
-			"22/tcp": []nat.PortBinding{
+			"8080/tcp": []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
-					HostPort: "22",
+					HostPort: "8080",
 				},
 			},
 		},
