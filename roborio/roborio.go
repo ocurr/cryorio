@@ -3,16 +3,16 @@ package roborio
 import (
 	"errors"
 	"fmt"
-
-	"golang.org/x/crypto/ssh"
 )
 
 // ErrorNoConnection represents a state where a roborio is unavailable at the specified addresses.
 var ErrorNoConnection = errors.New("unable to connect to roborio")
 
 type Roborio struct {
-	config   *ssh.ClientConfig
-	client   *ssh.Client
+	conn     Conn
+	dial     DialFunc
+	user     string
+	pass     string
 	team     int
 	addrs    []string
 	currAddr int
@@ -39,18 +39,8 @@ func Port(port int) Option {
 	}
 }
 
-func NewRoborio(user, pass string, options ...Option) (*Roborio, error) {
-	rio := &Roborio{port: 22}
-
-	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(pass),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	rio.config = config
+func NewRoborio(dial DialFunc, user, pass string, options ...Option) (*Roborio, error) {
+	rio := &Roborio{port: 22, dial: dial}
 
 	for _, option := range options {
 		option(rio)
@@ -78,30 +68,22 @@ func (r *Roborio) Connect() error {
 	if r.currAddr > len(r.addrs) {
 		return ErrorNoConnection
 	}
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", r.addrs[r.currAddr], r.port), r.config)
+	conn, err := r.dial(r.user, r.pass, fmt.Sprintf("%s:%d", r.addrs[r.currAddr], r.port))
 	if err != nil {
 		r.currAddr++
 		return fmt.Errorf("unable to connect to roborio at address %s %w", r.addrs[r.currAddr-1], err)
 	}
 
-	r.client = client
+	r.conn = conn
 	return nil
 }
 
 func (r *Roborio) Disconnect() error {
-	return r.client.Close()
+	return r.conn.Close()
 }
 
 func (r *Roborio) Exec(command string) ([]byte, error) {
-	session, err := r.client.NewSession()
-	if err != nil {
-		return []byte{}, err
-	}
-	out, err := session.CombinedOutput(command)
-	if err != nil {
-		return []byte{}, err
-	}
-	return out, nil
+	return r.conn.Exec(command)
 }
 
 func (r *Roborio) ListDir() ([]byte, error) {
