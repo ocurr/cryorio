@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-type testConn struct {
+type TestConn struct {
 	dir string
 }
 
-func (c *testConn) Close() error {
+func (c *TestConn) Close() error {
 	return nil
 }
 
-func (c *testConn) Exec(command string) ([]byte, error) {
+func (c *TestConn) Exec(command string) ([]byte, error) {
 	os.Chdir(c.dir)
 	cmd := []string{}
 	cmd = append(cmd, strings.Split(command, " ")...)

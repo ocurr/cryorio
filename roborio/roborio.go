@@ -3,10 +3,12 @@ package roborio
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // ErrorNoConnection represents a state where a roborio is unavailable at the specified addresses.
 var ErrorNoConnection = errors.New("unable to connect to roborio")
+var ErrorFileNotExist = errors.New("file does not exist")
 
 type Roborio struct {
 	conn     Conn
@@ -100,4 +102,18 @@ func (r *Roborio) Touch(name string) ([]byte, error) {
 
 func (r *Roborio) Remove(pattern string) ([]byte, error) {
 	return r.Exec("rm " + pattern)
+}
+
+func (r *Roborio) BackupFile(src, dest string) error {
+	out, _ := r.ListDir()
+	if !strings.Contains(string(out), src) {
+		return ErrorFileNotExist
+	}
+	dest = fmt.Sprintf("%s.backup", dest)
+
+	_, err := r.Copy(src, dest)
+	if err != nil {
+		return fmt.Errorf("unable to backup file: %w", err)
+	}
+	return nil
 }
