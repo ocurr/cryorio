@@ -24,6 +24,7 @@ func Execute() {
 	rootCmd.AddCommand(
 		NewBackupCommand(),
 		NewRestoreCommand(),
+		NewListCommand(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
