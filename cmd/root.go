@@ -8,6 +8,9 @@ import (
 )
 
 const version = "0.1"
+const frcUserProgram = "FRCUserProgram"
+const frcUser = "lvuser"
+const frcPassword = ""
 
 func Execute() {
 	rootCmd := &cobra.Command{
@@ -20,6 +23,7 @@ func Execute() {
 
 	rootCmd.AddCommand(
 		NewBackupCommand(),
+		NewRestoreCommand(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
